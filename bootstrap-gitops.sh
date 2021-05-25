@@ -2,8 +2,6 @@
 
 GITOPS_OVERLAY="stable-dex"
 
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-
 err() {
     echo; echo;
     echo -e "\e[97m\e[101m[ERROR]\e[0m ${1}"; shift; echo;
@@ -40,7 +38,7 @@ echo; echo;
 
 echo
 echo -n "Creating operator subscription ... "
-oc create -k ${SCRIPT_DIR}/openshift-gitops-operator/overlays/${GITOPS_OVERLAY} &> /dev/null \
+oc create -k https://github.com/kxr-gitops/config/openshift-gitops-operator/overlays/${GITOPS_OVERLAY} &> /dev/null \
     && echo "ok" || { echo "failed" && exit 1; }
 
 echo
@@ -62,7 +60,7 @@ while ! oc get argocd/openshift-gitops -n openshift-gitops &> /dev/null; do slee
     && echo "ok"
 
 echo
-echo -n "Patching argocd/openshift-gitops to use OpenShift authentication ..."
+echo -n "Patching argocd/openshift-gitops to use OpenShift authentication ... "
 sleep 2
 oc patch argocd openshift-gitops -n openshift-gitops --type=merge -p='{"spec":{"dex":{"openShiftOAuth":true}}}' &> /dev/null \
     && echo "ok" || { echo "failed" && exit 1; }
