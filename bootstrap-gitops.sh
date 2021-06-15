@@ -1,6 +1,10 @@
 #!/bin/bash
 
-GITOPS_OVERLAY="stable-dex"
+if [ -n "$1" ]; then
+	GITOPS_OVERLAY="stable-dex"
+else
+	GITOPS_OVERLAY="preview-dex"
+fi
 
 err() {
     echo; echo;

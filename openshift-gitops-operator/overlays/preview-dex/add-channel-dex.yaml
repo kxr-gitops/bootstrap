@@ -1,0 +1,9 @@
+- op: add
+  path: /spec/channel
+  value: preview
+- op: add
+  path: /spec/config
+  value:
+    env:
+      - name: DISABLE_DEX
+        value: 'false'
