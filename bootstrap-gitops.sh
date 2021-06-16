@@ -55,7 +55,7 @@ echo ${CSV}
 
 echo
 echo -n "Waiting for CSV to succeed ... "
-while [ $(oc get csv ${CSV} -n openshift-operators -o jsonpath="{.status.phase}" 2> /dev/null) != "Succeeded" ]; do sleep 2; done \
+while [ "$(oc get csv ${CSV} -n openshift-operators -o jsonpath="{.status.phase}" 2> /dev/null)" != "Succeeded" ]; do sleep 2; done \
     && echo ok
 
 echo
