@@ -33,6 +33,10 @@ oc auth can-i create subscription -n openshift-operators &> /dev/null \
 oc get subscription openshift-gitops-operator -n openshift-operators &> /dev/null \
     && err "openshift-gitops-operator already present in ns/openshift-operators"
 
+# Ensure we don't already have ns/openshift-gitops
+oc get project openshift-gitops -o name &> /dev/null \
+    && err "project openshift-gitops already exists"
+
 echo; echo;
 echo "This will install the latest Red Hat OpenShift GitOps Operator on ${OC_SERVER}"
 echo
@@ -59,13 +63,14 @@ while [ "$(oc get csv ${CSV} -n openshift-operators -o jsonpath="{.status.phase}
     && echo ok
 
 echo
-echo -n "Waiting for argocd/openshift-gitops in ns/openshift-gitops ... "
-while ! oc get argocd/openshift-gitops -n openshift-gitops &> /dev/null; do sleep 2; done \
-    && echo "ok"
+echo -n "Waiting for argocd in ns/openshift-gitops ... "
+while [ "$(oc get argocd -n openshift-gitops -o name 2> /dev/null | wc -l)" -lt 1 ] ; do sleep 2; done \
+    && echo "ok $(oc get argocd -n openshift-gitops -o name 2> /dev/null)"
 
 echo
-echo -n "Patching argocd/openshift-gitops to use OpenShift authentication ... "
+echo -n "Patching argocd to use OpenShift authentication ... "
 sleep 2
-oc patch argocd openshift-gitops -n openshift-gitops --type=merge -p='{"spec":{"dex":{"openShiftOAuth":true}}}' &> /dev/null \
+argocd=$(oc get argocd -n openshift-gitops -o name) || { echo "failed" && exit 1; }
+oc patch ${argocd} -n openshift-gitops --type=merge -p='{"spec":{"dex":{"openShiftOAuth":true}}}' &> /dev/null \
     && echo "ok" || { echo "failed" && exit 1; }
 
